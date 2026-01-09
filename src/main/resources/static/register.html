@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Регистрация пользователя</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f4f4f4;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+<h2>Регистрация нового пользователя</h2>
+
+<form id="registerForm">
+    <input type="text" name="username" placeholder="Логин" required>
+    <input type="password" name="password" placeholder="Пароль" required>
+    <input type="email" name="email" placeholder="Email (необязательно)">
+    <input type="text" name="name" placeholder="Имя (необязательно)">
+    <button type="submit">Зарегистрироваться</button>
+</form>
+
+<div id="result">
+    Результат появится здесь...
+</div>
+
+<div style="margin-top: 20px;">
+    <button onclick="testAllEndpoints()">Протестировать все эндпоинты</button>
+</div>
+
+<script>
+    // Обработчик формы регистрации
+    document.getElementById('registerForm').addEventListener('submit', async function(event) {
+        event.preventDefault(); // Отменяем стандартную отправку формы
+
+        // Собираем данные из формы
+        const formData = new FormData(this);
+        const data = {
+            username: formData.get('username'),
+            password: formData.get('password'),
+            email: formData.get('email') || '',
+            name: formData.get('name') || ''
+        };
+
+        // Показываем, что отправляем
+        document.getElementById('result').innerHTML =
+            '<p style="color: blue;">Отправляем запрос...</p>' +
+            '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+
+        try {
+            // Отправляем POST-запрос
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            // Получаем ответ
+            const result = await response.json();
+
+            // Показываем результат
+            const statusColor = response.ok ? 'green' : 'red';
+            document.getElementById('result').innerHTML =
+                `<p style="color: ${statusColor}; font-weight: bold;">
+                    Статус: ${response.status} ${response.ok ? 'OK ✓' : 'Ошибка ✗'}
+                </p>
+                <p>Сообщение: ${result.message}</p>
+                <p>ID пользователя: ${result.userId || '—'}</p>
+                <p>URL запроса: POST /api/auth/register</p>`;
+
+        } catch (error) {
+            document.getElementById('result').innerHTML =
+                `<p style="color: red;">Ошибка: ${error.message}</p>`;
+        }
+    });
+
+    // Функция для тестирования всех эндпоинтов
+    async function testAllEndpoints() {
+        const endpoints = [
+            { method: 'GET', url: '/' },
+            { method: 'GET', url: '/test' },
+            { method: 'GET', url: '/db-check' },
+            { method: 'GET', url: '/api/auth/test' }
+        ];
+
+        let results = '<h3>Тест всех эндпоинтов:</h3>';
+
+        for (const endpoint of endpoints) {
+            try {
+                const response = await fetch(endpoint.url, {
+                    method: endpoint.method
+                });
+                const text = await response.text();
+                results += `
+                    <div style="margin: 10px 0; padding: 10px; background: #f0f0f0;">
+                        <strong>${endpoint.method} ${endpoint.url}</strong><br>
+                        Статус: ${response.status}<br>
+                        Ответ: ${text}
+                    </div>`;
+            } catch (error) {
+                results += `
+                    <div style="margin: 10px 0; padding: 10px; background: #ffdddd;">
+                        <strong>${endpoint.method} ${endpoint.url}</strong><br>
+                        Ошибка: ${error.message}
+                    </div>`;
+            }
+        }
+
+        document.getElementById('result').innerHTML = results;
+    }
+</script>
+</body>
+</html>
