@@ -25,42 +25,39 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	// Spring Data JPA (работа с БД)
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	// Безопасность паролей
-	implementation 'org.springframework.security:spring-security-crypto'
+	//implementation 'org.springframework.security:spring-security-crypto'
+
+
 	// H2 Database (в памяти для разработки) - ДОБАВИЛ
 	runtimeOnly 'org.postgresql:postgresql'
 	runtimeOnly 'com.h2database:h2'
-	// PostgreSQL (пока закомментируем, потом подключим)
-	// runtimeOnly 'org.postgresql:postgresql'
+
 
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	//testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+	//testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 jar {
 	enabled = false
 }
 
-// 🔥 КРИТИЧЕСКИ ВАЖНО: Настраиваем bootJar
+
 bootJar {
 	archiveFileName = 'app.jar'  // Фиксированное имя для Railway
 	mainClass = 'com.sergey.myapp_backend.MyAppBackendApplication'
 }
 
-// 🔥 КРИТИЧЕСКИ ВАЖНО: Настраиваем bootJar
-bootJar {
-	archiveFileName = 'app.jar'  // Фиксированное имя для Railway
-	mainClass = 'com.sergey.myapp_backend.MyAppBackendApplication'
-}
 
 tasks.named('test') {
 	useJUnitPlatform()
