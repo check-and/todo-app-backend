@@ -46,6 +46,21 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+jar {
+	enabled = false
+}
+
+// 🔥 КРИТИЧЕСКИ ВАЖНО: Настраиваем bootJar
+bootJar {
+	archiveFileName = 'app.jar'  // Фиксированное имя для Railway
+	mainClass = 'com.sergey.myapp_backend.MyAppBackendApplication'
+}
+
+// 🔥 КРИТИЧЕСКИ ВАЖНО: Настраиваем bootJar
+bootJar {
+	archiveFileName = 'app.jar'  // Фиксированное имя для Railway
+	mainClass = 'com.sergey.myapp_backend.MyAppBackendApplication'
+}
 
 tasks.named('test') {
 	useJUnitPlatform()
