@@ -27,7 +27,7 @@ public class User {
     @Column(nullable = true)                                                              // УНИКАЛЬНОЕ значение (нельзя два одинаковых)
     private String email;
 
-    private String name;
+
 
     // Можно добавить роль (позже)
     // private String role = "USER";

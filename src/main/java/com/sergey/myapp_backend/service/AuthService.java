@@ -37,7 +37,7 @@ public class AuthService {
         user.setUsername(request.getUsername());
         user.setPassword(request.getPassword()); // Пока без шифрования
         user.setEmail(request.getEmail());
-        user.setName(request.getName());
+
 
         // Сохраняем в БД
         User savedUser = userRepository.save(user);
