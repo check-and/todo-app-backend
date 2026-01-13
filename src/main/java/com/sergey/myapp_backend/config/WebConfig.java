@@ -10,13 +10,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(
-                        "http://localhost:8080",
-                        "http://10.0.2.2:8080",      // Для эмулятора Android
-                        "http://192.168.1.15:8080",  // Для телефона в локальной сети
-                        "http://192.168.1.*:8080",// Для всех устройств в сети 192.168.1.x
-                        "https://todo-app-backend-production-2171.up.railway.app"
-                )
+                .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
