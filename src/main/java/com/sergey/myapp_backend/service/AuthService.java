@@ -79,22 +79,22 @@ public class AuthService {
 
 
     public LoginResponse login(LoginRequest request) {
-        // Находим пользователя по email
-        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+        // Ищем по USERNAME (а не по email)
+        Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
 
         if (userOptional.isEmpty()) {
-            return new LoginResponse("Invalid credentials", null, null);
+            return new LoginResponse("Invalid username or password", null, null);
         }
 
         User user = userOptional.get();
 
-        // Проверяем пароль (пока без шифрования)
+        // Проверяем пароль
         if (!user.getPassword().equals(request.getPassword())) {
-            return new LoginResponse("Invalid credentials", null, null);
+            return new LoginResponse("Invalid username or password", null, null);
         }
 
-        // Генерируем JWT токен
-        String token = jwtService.generateToken(user.getEmail());
+        // Генерируем JWT токен на основе username
+        String token = jwtService.generateToken(user.getUsername());
 
         return new LoginResponse(token, user.getId(), user.getEmail());
     }

@@ -23,13 +23,13 @@ public class JwtService {
         return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
-    public String generateToken(String email) {
+    public String generateToken(String username) { // ← Принимает username
         Map<String, Object> claims = new HashMap<>();
-        claims.put("email", email);
+        claims.put("username", username); // ← Кладём username в claims
 
         return Jwts.builder()
                 .claims(claims)
-                .subject(email)
+                .subject(username) // ← subject = username
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(getSigningKey())

@@ -53,88 +53,88 @@
 <div style="margin-top: 20px;">
     <button onclick="testAllEndpoints()">Протестировать все эндпоинты</button>
 </div>
-<hr style="margin: 40px 0;">
 
-<!-- 👇 НОВЫЙ БЛОК ДЛЯ ТЕСТА ВХОДА -->
-<h3>Тестирование входа (POST /api/auth/login)</h3>
-<div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
 
-    <!-- Быстрые кнопки для теста -->
-    <div style="margin-bottom: 15px;">
-        <strong>Быстрый тест:</strong>
-        <button onclick="fillTestData('test@example.com', 'password123')" style="margin: 0 5px; padding: 5px 10px; background: #6c757d; color: white; border: none; border-radius: 3px;">
-            Существующий пользователь
-        </button>
-        <button onclick="fillTestData('new@test.com', '123456')" style="margin: 0 5px; padding: 5px 10px; background: #28a745; color: white; border: none; border-radius: 3px;">
-            Новый пользователь
-        </button>
+
+
+
+
+<!-- Форма для входа по USERNAME -->
+<form id="loginTestForm">
+    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+        <input type="text" id="loginUsername" name="username" placeholder="USERNAME (не email!)"
+               style="flex: 1; padding: 10px; border: 1px solid #4CAF50; border-radius: 4px;">
+        <input type="password" id="loginPassword" name="password" placeholder="Пароль"
+               style="flex: 1; padding: 10px; border: 1px solid #4CAF50; border-radius: 4px;">
     </div>
 
-    <!-- Форма для входа -->
-    <form id="loginTestForm">
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <input type="email" id="loginEmail" name="email" placeholder="Email"
-                   style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-            <input type="password" id="loginPassword" name="password" placeholder="Пароль"
-                   style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
+    <div style="margin-bottom: 10px; display: flex; gap: 10px;">
+        <button type="button" onclick="fillTestUser()"
+                style="padding: 8px 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+            Заполнить testuser
+        </button>
         <button type="submit"
                 style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-            🔐 Отправить тест входа
+            🔐 Тест входа по USERNAME
         </button>
         <button type="button" onclick="clearLoginResult()"
-                style="margin-left: 10px; padding: 10px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                style="padding: 10px 15px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
             Очистить
         </button>
-    </form>
-
-    <!-- Результат теста -->
-    <div id="loginTestResult"
-         style="margin-top: 20px; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 14px;">
-        <div style="color: #6c757d;">Здесь появится результат тестирования входа...</div>
-        <div id="loginTestDetails"></div>
     </div>
+
+    <div style="font-size: 12px; color: #666;">
+        ⚠️ Теперь вход по <strong>USERNAME</strong>, а не по email!
+        <br>Тестовый пользователь: username="<strong>testuser</strong>", password="<strong>password123</strong>"
+    </div>
+</form>
+
+<!-- Результат теста -->
+<div id="loginTestResult"
+     style="margin-top: 20px; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 5px; font-family: 'Courier New', monospace; font-size: 14px;">
+    <div style="color: #6c757d;">Здесь появится результат тестирования входа...</div>
+    <div id="loginTestDetails"></div>
+</div>
 </div>
 
 <script>
-    // Заполнить тестовые данные
-    function fillTestData(email, password) {
-        document.getElementById('loginEmail').value = email;
-        document.getElementById('loginPassword').value = password;
+    // Заполнить тестового пользователя
+    function fillTestUser() {
+        document.getElementById('loginUsername').value = 'testuser';
+        document.getElementById('loginPassword').value = 'password123';
         document.getElementById('loginTestResult').innerHTML =
-            '<div style="color: #17a2b8;">⚠️ Заполнены тестовые данные: ' + email + '</div>';
+            '<div style="color: #4CAF50;">✅ Заполнены тестовые данные: username="testuser", password="password123"</div>';
     }
 
     // Очистить результат
     function clearLoginResult() {
-        document.getElementById('loginEmail').value = '';
+        document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
         document.getElementById('loginTestResult').innerHTML =
             '<div style="color: #6c757d;">Здесь появится результат тестирования входа...</div>';
         document.getElementById('loginTestDetails').innerHTML = '';
     }
 
-    // Обработчик формы входа
+    // Обработчик формы входа ПО USERNAME
     document.getElementById('loginTestForm').addEventListener('submit', async function(event) {
         event.preventDefault();
 
-        const email = document.getElementById('loginEmail').value;
+        const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
 
         const resultDiv = document.getElementById('loginTestResult');
         const detailsDiv = document.getElementById('loginTestDetails');
 
-        resultDiv.innerHTML = '<div style="color: #17a2b8;">⏳ Отправляем запрос POST /api/auth/login...</div>';
+        resultDiv.innerHTML = '<div style="color: #17a2b8;">⏳ Отправляем запрос POST /api/auth/login с username...</div>';
         detailsDiv.innerHTML = '';
 
         try {
+            // ВНИМАНИЕ: теперь отправляем username, а не email!
             const response = await fetch('/api/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    email: email,
+                    username: username,  // ← username вместо email
                     password: password
                 })
             });
@@ -145,10 +145,10 @@
             let statusColor, statusText;
             if (response.ok && result.token && !result.token.includes('Invalid')) {
                 statusColor = '#28a745'; // Зеленый
-                statusText = '✅ УСПЕХ';
+                statusText = '✅ УСПЕШНЫЙ ВХОД ПО USERNAME';
             } else {
                 statusColor = '#dc3545'; // Красный
-                statusText = '❌ ОШИБКА';
+                statusText = '❌ ОШИБКА ВХОДА';
             }
 
             // Отображаем результат
@@ -163,12 +163,13 @@
 
             if (result.token) {
                 if (result.token.includes('Invalid')) {
-                    details += `<span style="color: #dc3545;">Токен: ${result.token}</span><br>`;
+                    details += `<span style="color: #dc3545;">Сообщение: ${result.token}</span><br>`;
                 } else {
                     const shortToken = result.token.length > 50 ?
                         result.token.substring(0, 50) + '...' : result.token;
-                    details += `<span style="color: #28a745;">Токен (первые 50 символов): ${shortToken}</span><br>`;
-                    details += `<small style="color: #6c757d;">(Полный токен смотри в консоли браузера F12 → Console)</small><br>`;
+                    details += `<span style="color: #28a745;">JWT Token (первые 50 символов):</span><br>`;
+                    details += `<code style="background: #f8f9fa; padding: 5px; display: block; margin: 5px 0;">${shortToken}</code><br>`;
+                    details += `<small style="color: #6c757d;">(Полный токен в консоли браузера F12 → Console)</small><br>`;
                 }
             }
 
@@ -177,18 +178,19 @@
             }
 
             if (result.email) {
-                details += `Email: ${result.email}<br>`;
+                details += `Email пользователя: ${result.email}<br>`;
             }
 
             if (result.message) {
                 details += `Сообщение: ${result.message}<br>`;
             }
 
+            details += `Отправленный username: <strong>${username}</strong><br>`;
             details += '</div>';
             detailsDiv.innerHTML = details;
 
             // Дополнительно выводим в консоль для удобства
-            console.log('Тест входа:', { email, response: result });
+            console.log('Тест входа по USERNAME:', { username, response: result });
 
         } catch (error) {
             resultDiv.innerHTML = `
@@ -199,6 +201,14 @@
         }
     });
 </script>
+
+
+
+
+
+
+
+
 <script>
     // Обработчик формы регистрации
     document.getElementById('registerForm').addEventListener('submit', async function(event) {
