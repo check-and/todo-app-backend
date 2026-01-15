@@ -95,167 +95,192 @@
     <div style="color: #6c757d;">Здесь появится результат тестирования входа...</div>
     <div id="loginTestDetails"></div>
 </div>
-</div>
 
 <script>
+    // ==================== ФУНКЦИИ ДЛЯ ВХОДА ====================
+
     // Заполнить тестового пользователя
     function fillTestUser() {
         document.getElementById('loginUsername').value = 'testuser';
         document.getElementById('loginPassword').value = 'password123';
-        document.getElementById('loginTestResult').innerHTML =
-            '<div style="color: #4CAF50;">✅ Заполнены тестовые данные: username="testuser", password="password123"</div>';
+        const resultDiv = document.getElementById('loginTestResult');
+        if (resultDiv) {
+            resultDiv.innerHTML = '<div style="color: #4CAF50;">✅ Заполнены тестовые данные: username="testuser", password="password123"</div>';
+        }
     }
 
     // Очистить результат
     function clearLoginResult() {
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
-        document.getElementById('loginTestResult').innerHTML =
-            '<div style="color: #6c757d;">Здесь появится результат тестирования входа...</div>';
-        document.getElementById('loginTestDetails').innerHTML = '';
-    }
-
-    // Обработчик формы входа ПО USERNAME
-    document.getElementById('loginTestForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-
-        const username = document.getElementById('loginUsername').value;
-        const password = document.getElementById('loginPassword').value;
-
         const resultDiv = document.getElementById('loginTestResult');
         const detailsDiv = document.getElementById('loginTestDetails');
 
-        resultDiv.innerHTML = '<div style="color: #17a2b8;">⏳ Отправляем запрос POST /api/auth/login с username...</div>';
-        detailsDiv.innerHTML = '';
+        if (resultDiv) {
+            resultDiv.innerHTML = '<div style="color: #6c757d;">Здесь появится результат тестирования входа...</div>';
+        }
+        if (detailsDiv) {
+            detailsDiv.innerHTML = '';
+        }
+    }
 
-        try {
-            // ВНИМАНИЕ: теперь отправляем username, а не email!
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    username: username,  // ← username вместо email
-                    password: password
-                })
-            });
+    // Обработчик формы входа ПО USERNAME
+    const loginForm = document.getElementById('loginTestForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
 
-            const result = await response.json();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
 
-            // Определяем цвет статуса
-            let statusColor, statusText;
-            if (response.ok && result.token && !result.token.includes('Invalid')) {
-                statusColor = '#28a745'; // Зеленый
-                statusText = '✅ УСПЕШНЫЙ ВХОД ПО USERNAME';
-            } else {
-                statusColor = '#dc3545'; // Красный
-                statusText = '❌ ОШИБКА ВХОДА';
+            const resultDiv = document.getElementById('loginTestResult');
+            const detailsDiv = document.getElementById('loginTestDetails');
+
+            if (!resultDiv) {
+                console.error('Ошибка: элемент #loginTestResult не найден');
+                return;
             }
 
-            // Отображаем результат
-            resultDiv.innerHTML = `
-                <div style="color: ${statusColor}; font-weight: bold; margin-bottom: 10px;">
-                    ${statusText} | Статус: ${response.status} ${response.ok ? 'OK' : ''}
-                </div>
-            `;
+            resultDiv.innerHTML = '<div style="color: #17a2b8;">⏳ Отправляем запрос POST /api/auth/login с username...</div>';
+            if (detailsDiv) detailsDiv.innerHTML = '';
 
-            // Детализированная информация
-            let details = '<div style="margin-top: 15px;"><strong>Ответ сервера:</strong><br>';
+            try {
+                // ВНИМАНИЕ: теперь отправляем username, а не email!
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        username: username,  // ← username вместо email
+                        password: password
+                    })
+                });
 
-            if (result.token) {
-                if (result.token.includes('Invalid')) {
-                    details += `<span style="color: #dc3545;">Сообщение: ${result.token}</span><br>`;
+                const result = await response.json();
+
+                // Определяем цвет статуса
+                let statusColor, statusText;
+                if (response.ok && result.token && !result.token.includes('Invalid')) {
+                    statusColor = '#28a745'; // Зеленый
+                    statusText = '✅ УСПЕШНЫЙ ВХОД ПО USERNAME';
                 } else {
-                    const shortToken = result.token.length > 50 ?
-                        result.token.substring(0, 50) + '...' : result.token;
-                    details += `<span style="color: #28a745;">JWT Token (первые 50 символов):</span><br>`;
-                    details += `<code style="background: #f8f9fa; padding: 5px; display: block; margin: 5px 0;">${shortToken}</code><br>`;
-                    details += `<small style="color: #6c757d;">(Полный токен в консоли браузера F12 → Console)</small><br>`;
+                    statusColor = '#dc3545'; // Красный
+                    statusText = '❌ ОШИБКА ВХОДА';
+                }
+
+                // Отображаем результат
+                resultDiv.innerHTML = `
+                    <div style="color: ${statusColor}; font-weight: bold; margin-bottom: 10px;">
+                        ${statusText} | Статус: ${response.status} ${response.ok ? 'OK' : ''}
+                    </div>
+                `;
+
+                // Детализированная информация
+                let details = '<div style="margin-top: 15px;"><strong>Ответ сервера:</strong><br>';
+
+                if (result.token) {
+                    if (result.token.includes('Invalid')) {
+                        details += `<span style="color: #dc3545;">Сообщение: ${result.token}</span><br>`;
+                    } else {
+                        const shortToken = result.token.length > 50 ?
+                            result.token.substring(0, 50) + '...' : result.token;
+                        details += `<span style="color: #28a745;">JWT Token (первые 50 символов):</span><br>`;
+                        details += `<code style="background: #f8f9fa; padding: 5px; display: block; margin: 5px 0;">${shortToken}</code><br>`;
+                        details += `<small style="color: #6c757d;">(Полный токен в консоли браузера F12 → Console)</small><br>`;
+                    }
+                }
+
+                if (result.userId) {
+                    details += `ID пользователя: ${result.userId}<br>`;
+                }
+
+                if (result.email) {
+                    details += `Email пользователя: ${result.email}<br>`;
+                }
+
+                if (result.message) {
+                    details += `Сообщение: ${result.message}<br>`;
+                }
+
+                details += `Отправленный username: <strong>${username}</strong><br>`;
+                details += '</div>';
+
+                if (detailsDiv) {
+                    detailsDiv.innerHTML = details;
+                } else {
+                    resultDiv.innerHTML += details;
+                }
+
+                // Дополнительно выводим в консоль для удобства
+                console.log('Тест входа по USERNAME:', { username, response: result });
+
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div style="color: #dc3545; font-weight: bold;">❌ ОШИБКА СЕТИ</div>
+                    <div style="margin-top: 10px; color: #6c757d;">${error.message}</div>
+                `;
+                console.error('Ошибка теста входа:', error);
+            }
+        });
+    }
+
+    // ==================== ФУНКЦИИ ДЛЯ РЕГИСТРАЦИИ ====================
+
+    // Обработчик формы регистрации
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async function(event) {
+            event.preventDefault(); // Отменяем стандартную отправку формы
+
+            // Собираем данные из формы
+            const formData = new FormData(this);
+            const data = {
+                username: formData.get('username'),
+                password: formData.get('password'),
+                email: formData.get('email') || '',
+                name: formData.get('name') || ''
+            };
+
+            // Показываем, что отправляем
+            const resultDiv = document.getElementById('result');
+            if (resultDiv) {
+                resultDiv.innerHTML =
+                    '<p style="color: blue;">Отправляем запрос...</p>' +
+                    '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            }
+
+            try {
+                // Отправляем POST-запрос
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                // Получаем ответ
+                const result = await response.json();
+
+                // Показываем результат
+                const statusColor = response.ok ? 'green' : 'red';
+                if (resultDiv) {
+                    resultDiv.innerHTML =
+                        `<p style="color: ${statusColor}; font-weight: bold;">
+                            Статус: ${response.status} ${response.ok ? 'OK ✓' : 'Ошибка ✗'}
+                        </p>
+                        <p>Сообщение: ${result.message}</p>
+                        <p>ID пользователя: ${result.userId || '—'}</p>
+                        <p>URL запроса: POST /api/auth/register</p>`;
+                }
+
+            } catch (error) {
+                if (resultDiv) {
+                    resultDiv.innerHTML =
+                        `<p style="color: red;">Ошибка: ${error.message}</p>`;
                 }
             }
-
-            if (result.userId) {
-                details += `ID пользователя: ${result.userId}<br>`;
-            }
-
-            if (result.email) {
-                details += `Email пользователя: ${result.email}<br>`;
-            }
-
-            if (result.message) {
-                details += `Сообщение: ${result.message}<br>`;
-            }
-
-            details += `Отправленный username: <strong>${username}</strong><br>`;
-            details += '</div>';
-            detailsDiv.innerHTML = details;
-
-            // Дополнительно выводим в консоль для удобства
-            console.log('Тест входа по USERNAME:', { username, response: result });
-
-        } catch (error) {
-            resultDiv.innerHTML = `
-                <div style="color: #dc3545; font-weight: bold;">❌ ОШИБКА СЕТИ</div>
-                <div style="margin-top: 10px; color: #6c757d;">${error.message}</div>
-            `;
-            console.error('Ошибка теста входа:', error);
-        }
-    });
-</script>
-
-
-
-
-
-
-
-
-<script>
-    // Обработчик формы регистрации
-    document.getElementById('registerForm').addEventListener('submit', async function(event) {
-        event.preventDefault(); // Отменяем стандартную отправку формы
-
-        // Собираем данные из формы
-        const formData = new FormData(this);
-        const data = {
-            username: formData.get('username'),
-            password: formData.get('password'),
-            email: formData.get('email') || '',
-            name: formData.get('name') || ''
-        };
-
-        // Показываем, что отправляем
-        document.getElementById('result').innerHTML =
-            '<p style="color: blue;">Отправляем запрос...</p>' +
-            '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-
-        try {
-            // Отправляем POST-запрос
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            // Получаем ответ
-            const result = await response.json();
-
-            // Показываем результат
-            const statusColor = response.ok ? 'green' : 'red';
-            document.getElementById('result').innerHTML =
-                `<p style="color: ${statusColor}; font-weight: bold;">
-                    Статус: ${response.status} ${response.ok ? 'OK ✓' : 'Ошибка ✗'}
-                </p>
-                <p>Сообщение: ${result.message}</p>
-                <p>ID пользователя: ${result.userId || '—'}</p>
-                <p>URL запроса: POST /api/auth/register</p>`;
-
-        } catch (error) {
-            document.getElementById('result').innerHTML =
-                `<p style="color: red;">Ошибка: ${error.message}</p>`;
-        }
-    });
+        });
+    }
 
     // Функция для тестирования всех эндпоинтов
     async function testAllEndpoints() {
@@ -289,7 +314,10 @@
             }
         }
 
-        document.getElementById('result').innerHTML = results;
+        const resultDiv = document.getElementById('result');
+        if (resultDiv) {
+            resultDiv.innerHTML = results;
+        }
     }
 </script>
 </body>
