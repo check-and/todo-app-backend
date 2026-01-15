@@ -1,5 +1,7 @@
 package com.sergey.myapp_backend.controller;
 
+import com.sergey.myapp_backend.dto.LoginRequest;
+import com.sergey.myapp_backend.dto.LoginResponse;
 import com.sergey.myapp_backend.dto.RegisterRequest;
 import com.sergey.myapp_backend.dto.AuthResponse;
 import com.sergey.myapp_backend.service.AuthService;
@@ -22,6 +24,17 @@ public class AuthController {
         // Если произошла ошибка
         if (response.getMessage().contains("already exists")) {
             return ResponseEntity.badRequest().body(response);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+    // ДОБАВЬТЕ ЭТОТ МЕТОД:
+    @PostMapping("/login")
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+        LoginResponse response = authService.login(request);
+
+        if (response.getToken().contains("Invalid")) {
+            return ResponseEntity.status(401).body(response);
         }
 
         return ResponseEntity.ok(response);

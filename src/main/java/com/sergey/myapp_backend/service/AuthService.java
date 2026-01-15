@@ -1,5 +1,7 @@
 package com.sergey.myapp_backend.service;
 
+import com.sergey.myapp_backend.dto.LoginRequest;
+import com.sergey.myapp_backend.dto.LoginResponse;
 import com.sergey.myapp_backend.dto.RegisterRequest;
 import com.sergey.myapp_backend.dto.AuthResponse;
 import com.sergey.myapp_backend.model.User;
@@ -13,6 +15,9 @@ public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private JwtService jwtService; // Добавьте эту строку
 
     public AuthResponse register(RegisterRequest request) {
         // Проверяем, не существует ли уже пользователь с таким username
@@ -70,5 +75,27 @@ public class AuthService {
     private boolean isValidEmailFormat(String email) {
         // Простая проверка формата email
         return email.contains("@") && email.contains(".");
+    }
+
+
+    public LoginResponse login(LoginRequest request) {
+        // Находим пользователя по email
+        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
+
+        if (userOptional.isEmpty()) {
+            return new LoginResponse("Invalid credentials", null, null);
+        }
+
+        User user = userOptional.get();
+
+        // Проверяем пароль (пока без шифрования)
+        if (!user.getPassword().equals(request.getPassword())) {
+            return new LoginResponse("Invalid credentials", null, null);
+        }
+
+        // Генерируем JWT токен
+        String token = jwtService.generateToken(user.getEmail());
+
+        return new LoginResponse(token, user.getId(), user.getEmail());
     }
 }
