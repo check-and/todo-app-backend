@@ -37,7 +37,7 @@ public class TestController {
         user.setUsername("testuser");
         user.setPassword("password123");
         user.setEmail("test@example.com");
-        user.setName("Тестовый пользователь");
+
 
         userRepository.save(user);
 
