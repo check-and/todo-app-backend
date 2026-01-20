@@ -7,7 +7,10 @@ import com.sergey.myapp_backend.dto.AuthResponse;
 import com.sergey.myapp_backend.model.User;
 import com.sergey.myapp_backend.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
 import java.util.Optional;
 
 @Service
@@ -17,85 +20,51 @@ public class AuthService {
     private UserRepository userRepository;
 
     @Autowired
-    private JwtService jwtService; // Добавьте эту строку
+    private JwtService jwtService; // Добавляем JwtService
+
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public AuthResponse register(RegisterRequest request) {
-        // Проверяем, не существует ли уже пользователь с таким username
+        // Проверяем, существует ли пользователь
         if (userRepository.existsByUsername(request.getUsername())) {
             return new AuthResponse("Username already exists", null);
         }
 
-        // 2. Обрабатываем email
-        String email = processEmail(request.getEmail());
-
-        // 3. Проверяем email только если он НЕ null и не пустой
-        if (email != null && !email.isEmpty()) {
-            // Проверяем уникальность вручную
-            Optional<User> existingUser = userRepository.findByEmail(email);
-            if (existingUser.isPresent()) {
-                return new AuthResponse("Email already exists", null);
-            }
+        // Проверяем email, если он есть
+        if (request.getEmail() != null &&
+                !request.getEmail().isEmpty() &&
+                userRepository.findByEmail(request.getEmail()).isPresent()) {
+            return new AuthResponse("Email already exists", null);
         }
 
-        // Создаем нового пользователя
+        // Создаем пользователя с хешированным паролем
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(request.getPassword()); // Пока без шифрования
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEmail(request.getEmail());
 
+        userRepository.save(user);
 
-        // Сохраняем в БД
-        User savedUser = userRepository.save(user);
-
-        // Возвращаем ответ
-        return new AuthResponse("Registration successful", savedUser.getId());
-
+        return new AuthResponse("Registration successful", user.getId());
     }
-    private String processEmail(String rawEmail) {
-        if (rawEmail == null) {
-            return null;
-        }
-
-        String email = rawEmail.trim();
-
-        // Если после trim пусто - возвращаем null
-        if (email.isEmpty()) {
-            return null;
-        }
-
-        // Дополнительная валидация email (опционально)
-        if (!isValidEmailFormat(email)) {
-            // Можно вернуть null или бросить исключение
-            return email; // или null, если хочешь отклонять невалидные email
-        }
-
-        return email;
-    }
-
-    private boolean isValidEmailFormat(String email) {
-        // Простая проверка формата email
-        return email.contains("@") && email.contains(".");
-    }
-
 
     public LoginResponse login(LoginRequest request) {
-        // Ищем по USERNAME (а не по email)
         Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
 
         if (userOptional.isEmpty()) {
-            return new LoginResponse("Invalid username or password", null, null);
+            return new LoginResponse("Invalid credentials", null, null, null);
         }
 
         User user = userOptional.get();
 
-        // Проверяем пароль
-        if (!user.getPassword().equals(request.getPassword())) {
-            return new LoginResponse("Invalid username or password", null, null);
+        // Проверяем пароль через BCrypt
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return new LoginResponse("Invalid credentials", null, null, null);
         }
 
-        // Генерируем JWT токен на основе username
+        // Генерируем реальный JWT токен
         String token = jwtService.generateToken(user.getUsername());
 
-        return new LoginResponse(token, user.getId(), user.getEmail());
+        return new LoginResponse(token, user.getId(), user.getEmail(), user.getUsername());
     }
 }

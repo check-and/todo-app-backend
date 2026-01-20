@@ -4,13 +4,16 @@ public class LoginResponse {
     private String token;
     private Long userId;
     private String email;
+    private String username; // Добавляем поле
 
     // Конструкторы
     public LoginResponse() {}
-    public LoginResponse(String token, Long userId, String email) {
+
+    public LoginResponse(String token, Long userId, String email, String username) {
         this.token = token;
         this.userId = userId;
         this.email = email;
+        this.username = username;
     }
 
     // Геттеры и сеттеры
@@ -22,4 +25,7 @@ public class LoginResponse {
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
 }
