@@ -6,9 +6,8 @@ import com.sergey.myapp_backend.dto.RegisterRequest;
 import com.sergey.myapp_backend.dto.AuthResponse;
 import com.sergey.myapp_backend.model.User;
 import com.sergey.myapp_backend.repository.UserRepository;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,11 +17,6 @@ public class AuthService {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private JwtService jwtService; // Добавляем JwtService
-
-    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public AuthResponse register(RegisterRequest request) {
         // Проверяем, существует ли пользователь
@@ -37,10 +31,13 @@ public class AuthService {
             return new AuthResponse("Email already exists", null);
         }
 
-        // Создаем пользователя с хешированным паролем
+        // Хешируем пароль с BCrypt
+        String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
+
+        // Создаем пользователя
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(hashedPassword);
         user.setEmail(request.getEmail());
 
         userRepository.save(user);
@@ -57,13 +54,13 @@ public class AuthService {
 
         User user = userOptional.get();
 
-        // Проверяем пароль через BCrypt
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        // Проверяем пароль
+        if (!BCrypt.checkpw(request.getPassword(), user.getPassword())) {
             return new LoginResponse("Invalid credentials", null, null, null);
         }
 
-        // Генерируем реальный JWT токен
-        String token = jwtService.generateToken(user.getUsername());
+        // Генерируем простой токен
+        String token = "jwt_" + System.currentTimeMillis() + "_" + user.getId();
 
         return new LoginResponse(token, user.getId(), user.getEmail(), user.getUsername());
     }
