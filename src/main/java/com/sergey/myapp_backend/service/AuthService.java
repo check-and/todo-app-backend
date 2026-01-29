@@ -6,7 +6,6 @@ import com.sergey.myapp_backend.dto.RegisterRequest;
 import com.sergey.myapp_backend.dto.AuthResponse;
 import com.sergey.myapp_backend.model.User;
 import com.sergey.myapp_backend.repository.UserRepository;
-import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,20 +23,10 @@ public class AuthService {
             return new AuthResponse("Username already exists", null);
         }
 
-        // Проверяем email, если он есть
-        if (request.getEmail() != null &&
-                !request.getEmail().isEmpty() &&
-                userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return new AuthResponse("Email already exists", null);
-        }
-
-        // Хешируем пароль с BCrypt
-        String hashedPassword = BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
-
-        // Создаем пользователя
+        // Создаем пользователя с паролем в открытом виде (ТОЛЬКО ДЛЯ ТЕСТА!)
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(hashedPassword);
+        user.setPassword(request.getPassword()); // Пароль без хеширования!
         user.setEmail(request.getEmail());
 
         userRepository.save(user);
@@ -54,13 +43,13 @@ public class AuthService {
 
         User user = userOptional.get();
 
-        // Проверяем пароль
-        if (!BCrypt.checkpw(request.getPassword(), user.getPassword())) {
+        // Простое сравнение паролей (без хеширования)
+        if (!request.getPassword().equals(user.getPassword())) {
             return new LoginResponse("Invalid credentials", null, null, null);
         }
 
-        // Генерируем простой токен
-        String token = "jwt_" + System.currentTimeMillis() + "_" + user.getId();
+        // Простой токен
+        String token = "jwt_" + user.getId() + "_" + System.currentTimeMillis();
 
         return new LoginResponse(token, user.getId(), user.getEmail(), user.getUsername());
     }
