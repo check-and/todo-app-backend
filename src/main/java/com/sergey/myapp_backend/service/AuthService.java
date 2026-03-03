@@ -20,7 +20,7 @@ public class AuthService {
     public AuthResponse register(RegisterRequest request) {
         // Проверяем, существует ли пользователь
         if (userRepository.existsByUsername(request.getUsername())) {
-            return new AuthResponse("Username already exists", null);
+            return new AuthResponse("Уже существует", null);
         }
 
         // Создаем пользователя с паролем в открытом виде (ТОЛЬКО ДЛЯ ТЕСТА!)

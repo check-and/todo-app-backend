@@ -8,8 +8,8 @@ import com.sergey.myapp_backend.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-@RestController
+            //Spring Boot смотрит: "Куда отправить запрос POST /api/auth/register?"
+@RestController                                  // ← "Я обрабатываю HTTP запросы"
 @RequestMapping("/api/auth")
 
 public class AuthController {
@@ -17,13 +17,14 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        AuthResponse response = authService.register(request);
+    @PostMapping("/register")                       // ← "Я обрабатываю POST на /register"
+    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) { // Сюда попадает запрос!
+        // Вызываем сервис для основной работы
+        AuthResponse response = authService.register(request);              //передаем данные в сервис
 
         // Если произошла ошибка
         if (response.getMessage().contains("already exists")) {
-            return ResponseEntity.badRequest().body(response);
+            return ResponseEntity.badRequest().body(response);                  // HTTP 400 - ошибка
         }
 
         return ResponseEntity.ok(response);
@@ -42,7 +43,7 @@ public class AuthController {
 
     // Простой тестовый эндпоинт для проверки
     @GetMapping("/test")
-    public String test() {
+     public String test() {
         return "Auth controller is working!";
     }
 }

@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Table(name = "users")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity                     // ← Говорит Spring: "Этот класс будет таблицей в БД"
+@Table(name = "users")      // ← Название таблицы в БД будет "users"
+@Data                       // ← Автоматически создает геттеры, сеттеры, equals, hashCode, toString
+@NoArgsConstructor          // ← Автоматически создает конструктор без параметров
+@AllArgsConstructor         // ← Автоматически создает конструктор со всеми параметрами
 
 
 public class User {
